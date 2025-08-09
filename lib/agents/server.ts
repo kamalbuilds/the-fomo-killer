@@ -5,7 +5,7 @@ import { MasterAgent } from './master-agent';
 import { UtilityAgent } from './utility-agent';
 import { TradingAgent } from './trading-agent';
 import { GameAgent } from './game-agent';
-import { SocialAgent } from './social-agent';
+import { SocialAgent } from './sentiment-agent';
 import { MiniAppAgent } from './miniapp-agent';
 import { XMTPClientManager } from '../xmtp/client';
 import {

@@ -1,5 +1,9 @@
 import axios from 'axios';
-import { BaseAgent, AgentContext, AgentResponse } from './base-agent';
+import { BaseAgent } from './base-agent';
+import { AgentContext, AgentResponse } from '../types';
+import { DecodedMessage } from '@xmtp/browser-sdk';
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
 
 interface MarketMetrics {
   totalValueLocked: number;
@@ -53,22 +57,37 @@ interface DeFiProtocol {
 }
 
 export class DeFiAnalyticsAgent extends BaseAgent {
+  private x402PaymentRequired: boolean = true;
+  private x402PricePerRequest: number = 0.001; // Price in ETH
   private cdpApiKey: string;
   private cdpApiSecret: string;
   private baseApiUrl = 'https://api.cdp.coinbase.com/platform';
   private defiApiUrl = 'https://api.cdp.coinbase.com/v2/defi';
 
   constructor() {
-    super('DeFiAnalytics', '🔬');
+    super({
+      name: 'DeFiAnalytics',
+      description: 'DeFi analytics and market insights agent with premium features',
+      version: '1.0.0',
+      capabilities: ['market-analysis', 'yield-optimization', 'liquidity-analysis', 'impermanent-loss'],
+      isActive: true
+    });
     this.cdpApiKey = process.env.COINBASE_CDP_API_KEY || '';
     this.cdpApiSecret = process.env.COINBASE_CDP_API_SECRET || '';
   }
 
-  async processMessage(message: string, context: AgentContext): Promise<AgentResponse> {
-    this.logInfo(`Processing DeFi analytics request: ${message}`);
+  protected async handleMessage(message: DecodedMessage, context: AgentContext): Promise<AgentResponse> {
+    const messageContent = typeof message.content === 'string' ? message.content : '';
+    
+    // Check for x402 payment if required
+    if (this.x402PaymentRequired && !await this.verifyX402Payment(context)) {
+      return this.createPaymentRequiredResponse();
+    }
+    
+    this.logger.info(`Processing DeFi analytics request: ${messageContent}`);
     
     try {
-      const intent = this.analyzeAnalyticsIntent(message);
+      const intent = this.analyzeAnalyticsIntent(messageContent);
       
       switch (intent.action) {
         case 'market_overview':
@@ -86,10 +105,10 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         case 'impermanent_loss':
           return await this.calculateImpermanentLoss(intent, context);
         default:
-          return await this.handleGeneralAnalyticsQuery(message, context);
+          return await this.handleGeneralAnalyticsQuery(messageContent, context);
       }
     } catch (error) {
-      this.logError('Error processing analytics request:', error);
+      this.logger.error('Error processing analytics request:', error);
       return {
         message: 'I encountered an error analyzing DeFi metrics. Please try again.',
         actions: [],
@@ -160,7 +179,7 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         context: { marketOverview: { metrics, topProtocols, marketHealth } }
       };
     } catch (error) {
-      this.logError('Error getting market overview:', error);
+      this.logger.error('Error getting market overview:', error);
       throw error;
     }
   }
@@ -184,7 +203,7 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         transactionCount24h: 1500000
       };
     } catch (error) {
-      this.logError('Error fetching market metrics:', error);
+      this.logger.error('Error fetching market metrics:', error);
       throw error;
     }
   }
@@ -263,7 +282,7 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         context: { yieldOpportunities: optimized }
       };
     } catch (error) {
-      this.logError('Error finding yield opportunities:', error);
+      this.logger.error('Error finding yield opportunities:', error);
       throw error;
     }
   }
@@ -356,7 +375,7 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         context: { liquidityAnalysis: analysis }
       };
     } catch (error) {
-      this.logError('Error analyzing liquidity:', error);
+      this.logger.error('Error analyzing liquidity:', error);
       throw error;
     }
   }
@@ -443,7 +462,7 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         context: { protocolComparison: comparison }
       };
     } catch (error) {
-      this.logError('Error comparing protocols:', error);
+      this.logger.error('Error comparing protocols:', error);
       throw error;
     }
   }
@@ -532,7 +551,7 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         context: { trendAnalysis: trends }
       };
     } catch (error) {
-      this.logError('Error analyzing trends:', error);
+      this.logger.error('Error analyzing trends:', error);
       throw error;
     }
   }
@@ -574,7 +593,7 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         context: { gasOptimization: optimization }
       };
     } catch (error) {
-      this.logError('Error optimizing gas:', error);
+      this.logger.error('Error optimizing gas:', error);
       throw error;
     }
   }
@@ -634,7 +653,7 @@ export class DeFiAnalyticsAgent extends BaseAgent {
         context: { impermanentLoss: ilCalculation }
       };
     } catch (error) {
-      this.logError('Error calculating impermanent loss:', error);
+      this.logger.error('Error calculating impermanent loss:', error);
       throw error;
     }
   }
@@ -918,5 +937,80 @@ ${calculation.scenarios.map((s: any) =>
 ${calculation.hedgeStrategies.map((s: string) => `• ${s}`).join('\n')}
 
 💡 Remember: IL is only realized when you withdraw liquidity. Trading fees may compensate for IL over time.`;
+  }
+
+  // Required abstract methods implementation
+  protected async shouldHandleMessage(message: DecodedMessage, context: AgentContext): Promise<boolean> {
+    const content = typeof message.content === 'string' ? message.content.toLowerCase() : '';
+    const keywords = ['defi', 'analytics', 'yield', 'apy', 'tvl', 'liquidity', 'market', 'protocol', 'gas', 'impermanent'];
+    return keywords.some(keyword => content.includes(keyword));
+  }
+
+  protected async suggestNextAgent(message: DecodedMessage, context: AgentContext): Promise<string> {
+    const content = typeof message.content === 'string' ? message.content.toLowerCase() : '';
+    if (content.includes('swap') || content.includes('trade')) return 'swap-agent';
+    if (content.includes('sentiment') || content.includes('news')) return 'sentiment-agent';
+    if (content.includes('portfolio')) return 'portfolio-agent';
+    return 'master';
+  }
+
+  protected initializeTools(): void {
+    // Tools are initialized inline in the analytics methods
+    this.tools = [];
+  }
+
+  // x402 Payment Protocol Integration
+  private async verifyX402Payment(context: AgentContext): Promise<boolean> {
+    // Check if user has made payment via x402 protocol
+    // This would integrate with the actual x402 payment verification
+    const paymentHeader = context.messageHistory?.[0]?.headers?.['x-402-payment'];
+    if (paymentHeader) {
+      // Verify payment signature and amount
+      return this.validateX402PaymentSignature(paymentHeader);
+    }
+    return false;
+  }
+
+  private validateX402PaymentSignature(paymentHeader: any): boolean {
+    // Implement x402 payment signature validation
+    // This would verify the cryptographic signature of the payment
+    return true; // Placeholder - implement actual validation
+  }
+
+  private createPaymentRequiredResponse(): AgentResponse {
+    return {
+      message: `🔒 Premium Feature Required
+
+This advanced DeFi analytics feature requires a micro-payment of ${this.x402PricePerRequest} ETH.
+
+To access:
+1. Send payment via x402 protocol
+2. Include payment receipt in request header
+3. Enjoy unlimited analytics for 24 hours
+
+Payment Address: ${process.env.X402_PAYMENT_ADDRESS || '0x...'}
+
+Benefits:
+• Real-time market analytics
+• Advanced yield optimization
+• Professional trading insights
+• Priority API access`,
+      metadata: {
+        paymentRequired: true,
+        price: this.x402PricePerRequest,
+        protocol: 'x402',
+        agentName: 'DeFiAnalytics'
+      },
+      actions: [
+        {
+          type: 'payment',
+          payload: {
+            amount: this.x402PricePerRequest,
+            currency: 'ETH',
+            protocol: 'x402'
+          }
+        }
+      ]
+    };
   }
 }
