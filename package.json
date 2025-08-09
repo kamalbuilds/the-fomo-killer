@@ -69,5 +69,26 @@
   "trustedDependencies": [
     "@coinbase/agentkit",
     "@coinbase/agentkit-langchain"
-  ]
+  ],
+  "x402": {
+    "enabled": true,
+    "pricing": {
+      "defi-analytics": 0.001,
+      "sentiment-analysis": 0.0005,
+      "portfolio-management": 0.0008,
+      "swap-execution": 0.0002,
+      "token-tracking": 0.0003
+    },
+    "paymentAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb8",
+    "network": "base-mainnet",
+    "monetization": {
+      "model": "pay-per-request",
+      "sessionDuration": "24h",
+      "bulkDiscounts": {
+        "100": 0.1,
+        "500": 0.2,
+        "1000": 0.3
+      }
+    }
+  }
 }
