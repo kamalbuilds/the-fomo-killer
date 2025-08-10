@@ -1,0 +1,46 @@
+
+
+.section1 {
+  padding: 20px;
+}
+.section1_left {
+  position: relative;
+  width: 450px;
+  height: 200px;
+}
+.section1_right {
+
+}
+.black_box {
+  width: 275px;
+  padding: 20px;
+  background: #060C18;
+}
+.section2 {
+  margin: 10px auto;
+}
+.section_header {
+  padding: 20px;
+  border-radius: 10px 10px 0 0;
+}
+
+
+/* new styles */
+
+
+
+.h5_visible {
+  display: none;
+}
+
+@media screen and (max-width: 768px) {
+
+  .section1_left {
+    width: 100%;
+  }
+  .black_box {
+    flex: 1;
+    width: auto;
+    padding: 16px;
+  }
+}

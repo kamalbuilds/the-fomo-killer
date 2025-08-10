@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@font-face {
+  font-family: "Office Times Round";
+  src: url("/fonts/OfficeTimesRound-Regular.woff") format("woff");
+}
+@font-face {
+  font-family: "Messina Sans";
+  src: url("/fonts/MessinaSans-Regular.woff") format("woff");
+}
+
+:root {
+  --background: red;
+  --foreground: red;
+}
+
+body {
+  font-family: Messina Sans;
+  background-color: #010101 !important;
+}
+
+.fm1 {
+  font-family: "Messina Sans";
+}
+.fm2 {
+  font-family: "Office Times Round";
+}
+
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+*::-webkit-scrollbar {
+  width: 5px;             
+  height: 5px; 
+}
+
+*::-webkit-scrollbar-track {
+  background: #1A2526; /* 滚动条轨道背景色 */
+  border-radius: 4px; /* 轨道圆角 */
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #4A4A4A; /* 滚动条滑块颜色 */
+  border-radius: 4px; /* 滑块圆角 */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #2B323B; /* 滑块 hover 时的颜色 */
+}
+
+/* 兼容 Firefox */
+* {
+  scrollbar-color: #4A4A4A #1A2526; /* 滑块颜色 轨道颜色 */
+  scrollbar-width: thin; /* 滚动条宽度：thin、auto 或 none */
+}
+
+.chakra-step__separator{
+  width: 0!important;
+  background: none!important;
+  border-left:1px dashed #293941;
+}
+.chakra-step__separator[data-status=complete]{
+  border-left:1px solid #99CCE2;
+}
+
+
+
+/* override fullpage */
+.fullpage-wrapper {
+  height: 100%;
+}
+.fp-overflow {
+  height: 100%;
+}
+
+.fp-watermark {
+  display: none !important;
+}  

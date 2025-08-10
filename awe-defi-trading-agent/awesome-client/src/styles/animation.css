@@ -1,0 +1,202 @@
+.loading {
+  animation: loading_name 0.5s linear infinite;
+}
+@keyframes loading_name {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  25% {
+    -webkit-transform: rotate(90deg);
+  }
+  50% {
+    -webkit-transform: rotate(180deg);
+  }
+  75% {
+    -webkit-transform: rotate(270deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+.loadingSkeletonAnimation {
+  animation-name: skeleton;
+  animation-duration: 2s;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  background: linear-gradient(143deg, rgba(142, 44, 227, 0.3) -4.18%, rgba(75, 0, 223, 0.3) 92.28%);
+}
+@keyframes skeleton {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.1;
+  }
+}
+
+.type_animation {
+  overflow: hidden;
+  border-right: 0.15em solid orange;
+  white-space: nowrap;
+  width: 0;
+  animation: typing 3s steps(25, end) forwards infinite;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes blink {
+  from {
+    border-color: transparent;
+  }
+  to {
+    border-color: orange;
+  }
+}
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotation_animation{
+  animation: rotation 2s linear infinite;
+}
+
+
+
+.breathing_animation {
+  animation: breathing 2.5s ease-in-out infinite;
+}
+@keyframes breathing {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.92;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+.landing_page_bg {
+	position:absolute;
+	z-index:1;
+	top:50%;
+	left:50%;
+	transform:translate(-50%,-50%);
+	color:#fff;
+	letter-spacing:2px;
+	pointer-events:none;
+}
+
+canvas {
+	width:100%;
+}
+
+
+
+
+.terminal-container {
+
+  font-style: normal;
+  font-weight: 400;
+
+  color: #fff;
+  background: #000;
+  margin: 0 auto;
+
+  
+  
+}
+
+.terminal-line {
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+
+.typing-line .cursor {
+  display: inline-block;
+  width: 1ch;
+  height: 1.2em;
+  background: #fff;
+  margin-left: 2px;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+
+
+
+
+.card {
+  position: relative;
+  width: 30vw;
+  height: 30vw;
+  line-height: 30vw;
+  text-align: center;
+  color: #252B37;
+  background-color: #151823;
+  animation: textColor 10s ease infinite;
+}
+
+.card:after {
+  position: absolute;
+  content: "";
+  top: 5vw;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  height: 100%;
+  width: 100%;
+  margin: 0 auto;
+  transform: scale(0.75);
+  -webkit-filter: blur(5vw);
+  -moz-filter: blur(5vw);
+  -ms-filter: blur(5vw);
+  filter: blur(5vw);
+  background: linear-gradient(270deg, #0fffc1, #7e0fff);
+  background-size: 200% 200%;
+  animation: animateGlow 10s ease infinite;
+}
+@keyframes animateGlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+@keyframes textColor {
+  0% {
+    color: #7e0fff;
+  }
+  50% {
+    color: #0fffc1;
+  }
+  100% {
+    color: #7e0fff;
+  }
+}
