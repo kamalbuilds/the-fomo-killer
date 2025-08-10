@@ -30,7 +30,7 @@ export interface BatchTransaction {
 }
 
 /**
- * Smart Wallet Integration for BasedAgents
+ * Smart Wallet Integration for Kill-FOMO
  * Provides frictionless onboarding and wallet-native UX
  */
 export class SmartWalletIntegration {

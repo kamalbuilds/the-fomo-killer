@@ -10,7 +10,7 @@ const x402Config = {
   priceUsdcCents: parseInt(process.env.X402_PRICE_USDC_CENTS || '100'), // $1.00 default
   currency: 'USDC' as const,
   network: (process.env.NETWORK_ID?.includes('sepolia') ? 'base-sepolia' : 'base') as const,
-  description: 'BasedAgents Premium Portfolio Insights',
+  description: 'Kill-FOMO Premium Portfolio Insights',
 };
 
 const paymentMiddleware = createX402Middleware(x402Config);
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   const pricing = {
-    service: 'BasedAgents Premium Portfolio Insights',
+    service: 'Kill-FOMO Premium Portfolio Insights',
     price: {
       amount: x402Config.priceUsdcCents,
       currency: x402Config.currency,

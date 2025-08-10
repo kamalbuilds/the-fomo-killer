@@ -50,13 +50,22 @@ export class PortfolioAgent extends BaseAgent {
   private baseApiUrl = 'https://api.cdp.coinbase.com/platform';
 
   constructor() {
-    super('PortfolioAgent', '💼');
+    super({
+      name: 'portfolio',
+      isActive: true,
+      description: 'Manages cryptocurrency portfolios',
+      config: {}
+    });
     this.cdpApiKey = process.env.COINBASE_CDP_API_KEY || '';
     this.cdpApiSecret = process.env.COINBASE_CDP_API_SECRET || '';
   }
 
+  protected initializeTools(): void {
+    // Tools are initialized in the processMessage() method for this agent
+  }
+
   async processMessage(message: string, context: AgentContext): Promise<AgentResponse> {
-    this.logInfo(`Processing portfolio management request: ${message}`);
+    this.logger.info(`Processing portfolio management request: ${message}`);
     
     try {
       const intent = this.analyzePortfolioIntent(message);
@@ -80,7 +89,7 @@ export class PortfolioAgent extends BaseAgent {
           return await this.handleGeneralPortfolioQuery(message, context);
       }
     } catch (error) {
-      this.logError('Error processing portfolio request:', error);
+      this.logger.error('Error processing portfolio request:', error);
       return {
         message: 'I encountered an error analyzing your portfolio. Please try again.',
         actions: [],
@@ -164,7 +173,7 @@ export class PortfolioAgent extends BaseAgent {
         context: { portfolio: { assets, metrics, topMovers } }
       };
     } catch (error) {
-      this.logError('Error getting portfolio overview:', error);
+      this.logger.error('Error getting portfolio overview:', error);
       throw error;
     }
   }
@@ -211,7 +220,7 @@ export class PortfolioAgent extends BaseAgent {
       
       return assets.sort((a, b) => b.valueUSD - a.valueUSD);
     } catch (error) {
-      this.logError('Error fetching portfolio assets:', error);
+      this.logger.error('Error fetching portfolio assets:', error);
       // Return mock data for demonstration
       return this.getMockPortfolioAssets();
     }
@@ -392,7 +401,7 @@ export class PortfolioAgent extends BaseAgent {
         context: { performanceAnalysis: performance }
       };
     } catch (error) {
-      this.logError('Error analyzing performance:', error);
+      this.logger.error('Error analyzing performance:', error);
       throw error;
     }
   }
@@ -446,7 +455,7 @@ export class PortfolioAgent extends BaseAgent {
         context: { riskAnalysis }
       };
     } catch (error) {
-      this.logError('Error analyzing risk:', error);
+      this.logger.error('Error analyzing risk:', error);
       throw error;
     }
   }
@@ -530,7 +539,7 @@ export class PortfolioAgent extends BaseAgent {
         context: { rebalanceRecommendations: recommendations }
       };
     } catch (error) {
-      this.logError('Error generating rebalance recommendations:', error);
+      this.logger.error('Error generating rebalance recommendations:', error);
       throw error;
     }
   }
@@ -625,7 +634,7 @@ export class PortfolioAgent extends BaseAgent {
         context: { allocationAnalysis: allocation }
       };
     } catch (error) {
-      this.logError('Error analyzing allocation:', error);
+      this.logger.error('Error analyzing allocation:', error);
       throw error;
     }
   }
@@ -698,7 +707,7 @@ export class PortfolioAgent extends BaseAgent {
         context: { trackingConfig }
       };
     } catch (error) {
-      this.logError('Error setting up tracking:', error);
+      this.logger.error('Error setting up tracking:', error);
       throw error;
     }
   }
@@ -742,7 +751,7 @@ export class PortfolioAgent extends BaseAgent {
         context: { portfolioReport: report }
       };
     } catch (error) {
-      this.logError('Error exporting report:', error);
+      this.logger.error('Error exporting report:', error);
       throw error;
     }
   }

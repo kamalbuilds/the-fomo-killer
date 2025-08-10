@@ -3,6 +3,7 @@ import { BaseLanguageModel } from '@langchain/core/language_models/base';
 import { ChatOpenAI } from '@langchain/openai';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { LLMProvider } from './llm-provider';
 import { EventEmitter } from 'events';
 import winston from 'winston';
 import {
@@ -16,9 +17,12 @@ import {
 } from '../types';
 
 /**
- * Base class for all agents in the BasedAgents system
+ * Base class for all agents in the Kill-FOMO system
  * Provides common functionality for XMTP messaging, blockchain integration, and AI processing
  */
+// Re-export types for convenience
+export type { AgentContext, AgentResponse, BaseAgentConfig } from '../types';
+
 export abstract class BaseAgent extends EventEmitter {
   protected config: BaseAgentConfig;
   protected llm: BaseLanguageModel;
@@ -32,7 +36,10 @@ export abstract class BaseAgent extends EventEmitter {
     this.config = config;
     this.logger = this.createLogger();
     this.llm = this.createLLM();
-    this.initializeTools();
+    // Initialize tools if the method is implemented
+    if (typeof this.initializeTools === 'function') {
+      this.initializeTools();
+    }
   }
 
   /**
@@ -127,16 +134,19 @@ export abstract class BaseAgent extends EventEmitter {
   /**
    * Initialize agent-specific tools
    */
-  protected abstract initializeTools(): void;
+  protected initializeTools?(): void;
 
   /**
-   * Create the OpenAI language model instance
+   * Create the OpenAI language model instance (using OpenRouter)
    */
   private createLLM(): BaseLanguageModel {
     return new ChatOpenAI({
-      modelName: 'gpt-4o',
+      modelName: 'openai/gpt-4o-mini', // OpenRouter model format
       temperature: 0.1,
       openAIApiKey: process.env.OPENAI_API_KEY,
+      configuration: {
+        baseURL: process.env.OPENAI_API_BASE || 'https://openrouter.ai/api/v1',
+      },
     });
   }
 
@@ -144,18 +154,30 @@ export abstract class BaseAgent extends EventEmitter {
    * Process a message using the LLM with context
    */
   protected async processWithLLM(message: string, context: AgentContext): Promise<string> {
-    const prompt = ChatPromptTemplate.fromMessages([
-      ['system', this.getSystemPrompt()],
-      ['human', message],
-    ]);
+    try {
+      // Use the LLMProvider with fallback support
+      const llmProvider = LLMProvider.getInstance();
+      const systemPrompt = this.getSystemPrompt();
+      
+      // Format the message with context
+      const contextualMessage = `
+${this.formatChatHistory(context.messageHistory || [])}
 
-    const formattedPrompt = await prompt.format({
-      input: message,
-      chat_history: this.formatChatHistory(context.messageHistory),
-    });
-
-    const response = await this.llm.invoke(formattedPrompt);
-    return response.content as string;
+User: ${message}`;
+      
+      // Get response from LLM (or mock if no credits)
+      const response = await llmProvider.invoke(contextualMessage, systemPrompt);
+      
+      if (llmProvider.isUsingMock()) {
+        this.logger.warn('Using mock LLM responses due to API limitations');
+      }
+      
+      return response;
+    } catch (error) {
+      this.logger.error('Error in processWithLLM:', error);
+      // Fallback to a basic response
+      return `I understand you're asking about "${message}". Let me help you with that. What specific aspect would you like to know more about?`;
+    }
   }
 
   /**
@@ -173,20 +195,20 @@ export abstract class BaseAgent extends EventEmitter {
   protected getSystemPrompt(): string {
     return `You are ${this.config.name}, ${this.config.description}.
 
-Your capabilities include: ${this.config.capabilities.join(', ')}.
+    Your capabilities include: ${this.config.capabilities.join(', ')}.
 
-You are part of the BasedAgents multi-agent system built for secure messaging on XMTP and onchain operations on Base.
+    You are part of the Kill-FOMO multi-agent system built for secure messaging on XMTP and onchain operations on Base.
 
-Key guidelines:
-1. Always be helpful and provide accurate information
-2. Use blockchain tools only when explicitly requested or necessary
-3. Maintain user privacy and security at all times
-4. If you cannot handle a request, suggest the appropriate agent
-5. Be concise but informative in your responses
-6. Always confirm before executing any transactions
+    Key guidelines:
+    1. Always be helpful and provide accurate information
+    2. Use blockchain tools only when explicitly requested or necessary
+    3. Maintain user privacy and security at all times
+    4. If you cannot handle a request, suggest the appropriate agent
+    5. Be concise but informative in your responses
+    6. Always confirm before executing any transactions
 
-Current context: You are responding to a message in a conversation. Consider the conversation history and user preferences when responding.`;
-  }
+    Current context: You are responding to a message in a conversation. Consider the conversation history and user preferences when responding.`;
+    }
 
   /**
    * Update conversation context with new message

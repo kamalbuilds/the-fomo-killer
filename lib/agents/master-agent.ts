@@ -227,7 +227,7 @@ export class MasterAgent extends BaseAgent {
       const targetAgent = await this.findBestAgent(message, context);
       
       if (!targetAgent) {
-        return this.createFallbackResponse(message, context);
+        return await this.createFallbackResponse(message, context);
       }
 
       // If routing to another agent, delegate the message
@@ -240,14 +240,33 @@ export class MasterAgent extends BaseAgent {
         return await this.handleSystemQuery(message, context);
       }
 
-      // Default response for master agent
-      return {
-        message: this.generateMasterResponse(message, context),
-        metadata: {
-          handledBy: 'master',
-          availableAgents: Array.from(this.registeredAgents.keys()),
-        },
-      };
+      // Use LLM for intelligent response
+      const messageContent = typeof message.content === 'string' ? message.content : String(message.content);
+      
+      try {
+        // Try to use LLM for response
+        const llmResponse = await this.processWithLLM(messageContent, context);
+        return {
+          message: llmResponse,
+          metadata: {
+            handledBy: 'master',
+            availableAgents: Array.from(this.registeredAgents.keys()),
+            usedLLM: true
+          },
+        };
+      } catch (llmError) {
+        // Fallback to hardcoded response if LLM fails
+        this.logger.error('LLM processing failed, using fallback', { llmError });
+        return {
+          message: this.generateMasterResponse(message, context),
+          metadata: {
+            handledBy: 'master',
+            availableAgents: Array.from(this.registeredAgents.keys()),
+            usedLLM: false,
+            llmError: llmError instanceof Error ? llmError.message : 'Unknown error'
+          },
+        };
+      }
     } catch (error) {
       this.logger.error('Error in master agent message handling', { error });
       return this.createErrorResponse(error as Error);
@@ -261,7 +280,13 @@ export class MasterAgent extends BaseAgent {
     message: DecodedMessage,
     context: AgentContext
   ): Promise<string | null> {
-    const messageContent = message.content.toLowerCase();
+    const messageContent = (typeof message.content === 'string' ? message.content : String(message.content)).toLowerCase();
+    
+    // Log routing attempt
+    this.logger.info('Finding best agent for message', { 
+      content: messageContent.substring(0, 100),
+      registeredAgents: Array.from(this.registeredAgents.keys())
+    });
     
     // Check routing rules in priority order
     for (const rule of this.routingRules) {
@@ -275,9 +300,18 @@ export class MasterAgent extends BaseAgent {
       
       if (matches && this.evaluateConditions(rule.conditions, message, context)) {
         // Verify the agent is registered and active
-        const agent = this.registeredAgents.get(rule.agent);
+        const targetAgent = rule.targetAgent || rule.agent;
+        const agent = this.registeredAgents.get(targetAgent);
+        
+        this.logger.info('Routing rule matched', { 
+          pattern: rule.pattern.toString(), 
+          targetAgent,
+          isRegistered: !!agent,
+          isActive: agent?.getConfig()?.isActive 
+        });
+        
         if (agent && agent.getConfig().isActive) {
-          return rule.agent;
+          return targetAgent;
         }
       }
     }
@@ -368,11 +402,14 @@ export class MasterAgent extends BaseAgent {
     }
 
     this.logger.info(`Delegating message to ${agentName}`, {
-      messageLength: message.content.length,
+      messageLength: (typeof message.content === "string" ? message.content : String(message.content)).length,
       userId: context.userId,
     });
 
-    const response = await agent.processMessage(message, context);
+    // Check if agent expects string or DecodedMessage
+    // Specialized agents expect string, base agents expect DecodedMessage
+    const messageParam = typeof message.content === 'string' ? message.content : message;
+    const response = await agent.processMessage(messageParam, context);
     
     // Add delegation metadata
     response.metadata = {
@@ -388,7 +425,7 @@ export class MasterAgent extends BaseAgent {
    * Check if the message is a system-level query
    */
   private async isSystemQuery(message: DecodedMessage): Promise<boolean> {
-    const content = message.content.toLowerCase();
+    const content = (typeof message.content === 'string' ? message.content : String(message.content)).toLowerCase();
     const systemKeywords = [
       'help', 'agents', 'capabilities', 'health', 'status', 'system',
       'what can you do', 'who are you', 'available agents'
@@ -454,7 +491,7 @@ export class MasterAgent extends BaseAgent {
    */
   private getHelpResponse(): AgentResponse {
     return {
-      message: `🚀 **Welcome to BasedAgents!**\n\nI'm your MasterAgent, orchestrating a team of specialized AI agents for onchain messaging and operations.\n\n**What I can help with:**\n• Route you to the right specialist agent\n• Provide system information\n• Coordinate multi-agent workflows\n\n**Try asking:**\n• "What's my portfolio worth?" (Trading)\n• "Let's play a game!" (Gaming)\n• "Plan an event for Friday" (Utility)\n• "Show me latest crypto news" (Social)\n• "Open a calculator" (MiniApp)\n\nJust tell me what you need!`,
+      message: `🚀 **Welcome to Kill-FOMO!**\n\nI'm your MasterAgent, orchestrating a team of specialized AI agents for onchain messaging and operations.\n\n**What I can help with:**\n• Route you to the right specialist agent\n• Provide system information\n• Coordinate multi-agent workflows\n\n**Try asking:**\n• "What's my portfolio worth?" (Trading)\n• "Let's play a game!" (Gaming)\n• "Plan an event for Friday" (Utility)\n• "Show me latest crypto news" (Social)\n• "Open a calculator" (MiniApp)\n\nJust tell me what you need!`,
       metadata: { type: 'help' },
     };
   }
@@ -464,7 +501,7 @@ export class MasterAgent extends BaseAgent {
    */
   private getGeneralSystemResponse(): AgentResponse {
     return {
-      message: `I'm the MasterAgent coordinating the BasedAgents system. How can I help you today?`,
+      message: `I'm the MasterAgent coordinating the Kill-FOMO system. How can I help you today?`,
       metadata: { type: 'general' },
     };
   }
@@ -479,22 +516,34 @@ export class MasterAgent extends BaseAgent {
   /**
    * Create fallback response when no suitable agent is found
    */
-  private createFallbackResponse(message: DecodedMessage, context: AgentContext): AgentResponse {
+  private async createFallbackResponse(message: DecodedMessage, context: AgentContext): Promise<AgentResponse> {
     const config = this.config as MasterAgentConfig;
     const fallbackAgent = this.registeredAgents.get(config.fallbackAgent);
     
-    if (fallbackAgent) {
+    // Try to use LLM for intelligent fallback response
+    const messageContent = typeof message.content === 'string' ? message.content : String(message.content);
+    try {
+      const llmResponse = await this.processWithLLM(messageContent, context);
       return {
-        message: `I'm not sure which agent is best for this request. Let me connect you with our general assistant.`,
-        nextAgent: config.fallbackAgent,
-        metadata: { fallback: true },
+        message: llmResponse,
+        nextAgent: fallbackAgent ? config.fallbackAgent : undefined,
+        metadata: { fallback: true, usedLLM: true },
+      };
+    } catch (error) {
+      // Use hardcoded fallback if LLM fails
+      if (fallbackAgent) {
+        return {
+          message: `I'm not sure which agent is best for this request. Let me connect you with our general assistant.`,
+          nextAgent: config.fallbackAgent,
+          metadata: { fallback: true, usedLLM: false },
+        };
+      }
+    
+      return {
+        message: `I'm not sure how to handle that request right now. Could you try rephrasing or asking about something specific like trading, games, events, or social content?`,
+        metadata: { fallback: true, noFallbackAgent: true },
       };
     }
-    
-    return {
-      message: `I'm not sure how to handle that request right now. Could you try rephrasing or asking about something specific like trading, games, events, or social content?`,
-      metadata: { fallback: true, noFallbackAgent: true },
-    };
   }
 
   /**

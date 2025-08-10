@@ -1,8 +1,8 @@
-# BasedAgents - Code NYC Hackathon Submission
+# Kill-FOMO - Code NYC Hackathon Submission
 
 ## 🏆 Qualifying for All Three Bounty Tracks
 
-BasedAgents is a sophisticated multi-agent system that qualifies for **all three Code NYC bounty tracks** with production-ready implementations:
+Kill-FOMO is a sophisticated multi-agent system that qualifies for **all three Code NYC bounty tracks** with production-ready implementations:
 
 ### 1️⃣ Data-Driven Agents ($5,000 - $2,500 - $1,000)
 ✅ **Challenge**: Build AI agents or dashboards that react to real user activity using Coinbase's Data APIs

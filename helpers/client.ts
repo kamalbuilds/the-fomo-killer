@@ -1,7 +1,7 @@
 import { getRandomValues } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { IdentifierKind, type Client, type Signer } from "@xmtp/browser-sdk";
+import { type Client, type Signer } from "@xmtp/browser-sdk";
 import { fromString, toString } from "uint8arrays";
 import { createWalletClient, http, toBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
@@ -35,7 +35,7 @@ export const createSigner = (key: `0x${string}`): Signer => {
   });
   return {
     getIdentifier: () => ({
-      identifierKind: IdentifierKind.Ethereum,
+      identifierKind: 'ethereum' as const,
       identifier: account.address.toLowerCase(),
     }),
     signMessage: async (message: string) => {

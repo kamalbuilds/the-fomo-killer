@@ -1,10 +1,10 @@
-# BasedAgents Implementation Summary - Code NYC 2025
+# Kill-FOMO Implementation Summary - Code NYC 2025
 
 ## 🏆 Complete Implementation Status: ALL THREE BOUNTY TRACKS ✅
 
 ### 🚀 What We Built
 
-BasedAgents is now a **production-ready multi-agent system** that qualifies for all three Code NYC bounty tracks with real, working implementations - no mocks, no prototypes, only production code.
+Kill-FOMO is now a **production-ready multi-agent system** that qualifies for all three Code NYC bounty tracks with real, working implementations - no mocks, no prototypes, only production code.
 
 ## 📊 1. Data-Driven Agents Track ✅
 
@@ -57,7 +57,7 @@ const response = await axios.get(
 ### x402 Headers Implementation
 ```typescript
 response.headers.set('WWW-Authenticate', 
-  `x402 realm="BasedAgents", address="${sellerAddress}", amount_cents="${priceUsdcCents}"`
+  `x402 realm="Kill-FOMO", address="${sellerAddress}", amount_cents="${priceUsdcCents}"`
 );
 ```
 
@@ -195,7 +195,7 @@ base-agent/
 
 ## 🎉 Result
 
-BasedAgents is now a **complete, production-ready multi-agent system** that:
+Kill-FOMO is now a **complete, production-ready multi-agent system** that:
 
 ✅ **Qualifies for ALL THREE Code NYC bounty tracks**  
 ✅ **Uses only real APIs and integrations (no mocks)**  

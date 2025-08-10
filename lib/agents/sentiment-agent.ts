@@ -31,7 +31,7 @@ import {
  * Production-grade SocialAgent with real content curation and blockchain tipping
  * Uses createReactAgent for proper LLM + tool integration
  */
-export class SocialAgent extends BaseAgent {
+export class SentimentAgent extends BaseAgent {
   private agentKit?: AgentKit;
   private walletProvider?: CdpV2EvmWalletProvider;
   private reactAgent?: ReturnType<typeof createReactAgent>;

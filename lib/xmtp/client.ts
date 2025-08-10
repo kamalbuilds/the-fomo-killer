@@ -27,7 +27,7 @@ export class XMTPClientManager extends EventEmitter {
    */
   async initialize(): Promise<void> {
     try {
-      const signer = createSigner(process.env.WALLET_PRIVATE_KEY!);
+      const signer = createSigner(process.env.WALLET_PRIVATE_KEY! as `0x${string}`);
       const dbEncryptionKey = getEncryptionKeyFromHex(process.env.ENCRYPTION_KEY!);
       const env = (process.env.XMTP_ENV as 'dev' | 'production' | 'local') || 'production';
       

@@ -14,9 +14,16 @@ export interface BaseAgentConfig {
 export interface AgentContext {
   userId: string;
   conversationId: string;
-  messageHistory: DecodedMessage[];
+  messageHistory?: DecodedMessage[];
   userPreferences?: UserPreferences;
   agentMemory?: Record<string, any>;
+  wallet?: {
+    address: string;
+    [key: string]: any;
+  };
+  metadata?: Record<string, any>;
+  timestamp?: Date;
+  senderAddress?: string;
 }
 
 export interface AgentResponse {
@@ -28,8 +35,10 @@ export interface AgentResponse {
 }
 
 export interface AgentAction {
-  type: 'transaction' | 'miniapp' | 'notification' | 'data_request';
-  payload: any;
+  type: 'transaction' | 'miniapp' | 'notification' | 'data_request' | string; // Allow custom action types
+  payload?: any;
+  data?: any; // Some agents use data instead of payload
+  label?: string;
   confirmation?: boolean;
 }
 
@@ -66,7 +75,8 @@ export interface MasterAgentConfig extends BaseAgentConfig {
 
 export interface RoutingRule {
   pattern: string | RegExp;
-  agent: string;
+  agent?: string;
+  targetAgent?: string; // Support both for compatibility
   priority: number;
   conditions?: Record<string, any>;
 }

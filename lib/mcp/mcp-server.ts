@@ -1,4 +1,4 @@
-// Model Context Protocol (MCP) Server for BasedAgents
+// Model Context Protocol (MCP) Server for Kill-FOMO
 // Qualifies for Code NYC "Autonomous Worlds & Agents" bounty track
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -16,7 +16,7 @@ import { DataDrivenAgent } from '../agents/data-driven-agent';
 import { TradingAgent } from '../agents/trading-agent';
 
 /**
- * MCP Server implementation for BasedAgents
+ * MCP Server implementation for Kill-FOMO
  * Exposes agent capabilities via standardized MCP protocol
  */
 export class BasedAgentsMCPServer {
@@ -61,7 +61,7 @@ export class BasedAgentsMCPServer {
     this.agents.set('data-driven', dataAgent);
     this.agents.set('trading', tradingAgent);
 
-    console.log('BasedAgents MCP Server initialized with agents:', Array.from(this.agents.keys()));
+    console.log('Kill-FOMO MCP Server initialized with agents:', Array.from(this.agents.keys()));
   }
 
   private setupHandlers(): void {
@@ -545,7 +545,7 @@ export class BasedAgentsMCPServer {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
     
-    console.log('BasedAgents MCP Server started on stdio transport');
+    console.log('Kill-FOMO MCP Server started on stdio transport');
   }
 }
 

@@ -35,13 +35,24 @@ export class SwapAgent extends BaseAgent {
   private swapsApiUrl = 'https://api.cdp.coinbase.com/v2/evm/swaps';
 
   constructor() {
-    super('SwapAgent', '💱');
+    super({
+      name: 'swap',
+      isActive: true,
+      description: 'Handles token swaps and DeFi trading',
+      version: '1.0.0',
+      capabilities: ['swap', 'trade', 'arbitrage', 'route', 'price'],
+      priority: 80
+    });
     this.cdpApiKey = process.env.COINBASE_CDP_API_KEY || '';
     this.cdpApiSecret = process.env.COINBASE_CDP_API_SECRET || '';
   }
 
+  protected initializeTools(): void {
+    // Tools are initialized in the processMessage() method for this agent
+  }
+
   async processMessage(message: string, context: AgentContext): Promise<AgentResponse> {
-    this.logInfo(`Processing swap request: ${message}`);
+    this.logger.info(`Processing swap request: ${message}`);
     
     try {
       const intent = this.analyzeSwapIntent(message);
@@ -61,7 +72,7 @@ export class SwapAgent extends BaseAgent {
           return await this.handleGeneralSwapQuery(message, context);
       }
     } catch (error) {
-      this.logError('Error processing swap request:', error);
+      this.logger.error('Error processing swap request:', error);
       return {
         message: 'I encountered an error processing your swap request. Please try again.',
         actions: [],
@@ -76,6 +87,13 @@ export class SwapAgent extends BaseAgent {
     // Extract amounts and tokens
     const amountMatch = message.match(/(\d+\.?\d*)\s*(\w+)/g);
     const tokens = this.extractTokens(message);
+    
+    // Log for debugging
+    this.logger.info('Analyzing swap intent', { 
+      message: lower.substring(0, 100), 
+      tokens, 
+      amountMatch 
+    });
     
     if (lower.includes('swap') || lower.includes('exchange') || lower.includes('trade')) {
       if (lower.includes('execute') || lower.includes('confirm')) {
@@ -148,7 +166,7 @@ export class SwapAgent extends BaseAgent {
         context: { swapQuote: quote }
       };
     } catch (error) {
-      this.logError('Error getting swap quote:', error);
+      this.logger.error('Error getting swap quote:', error);
       throw error;
     }
   }
@@ -182,7 +200,7 @@ export class SwapAgent extends BaseAgent {
       
       return this.parseSwapQuote(response.data);
     } catch (error) {
-      this.logError('Error fetching swap quote:', error);
+      this.logger.error('Error fetching swap quote:', error);
       // Return mock quote for now
       return this.getMockSwapQuote(fromToken, toToken, amount);
     }
@@ -229,7 +247,7 @@ export class SwapAgent extends BaseAgent {
         context: { pendingTransaction: transaction }
       };
     } catch (error) {
-      this.logError('Error executing swap:', error);
+      this.logger.error('Error executing swap:', error);
       throw error;
     }
   }
@@ -250,7 +268,7 @@ export class SwapAgent extends BaseAgent {
       
       return response.data.transaction;
     } catch (error) {
-      this.logError('Error building swap transaction:', error);
+      this.logger.error('Error building swap transaction:', error);
       // Return mock transaction
       return {
         to: '0x1234567890123456789012345678901234567890',
@@ -289,7 +307,7 @@ export class SwapAgent extends BaseAgent {
         context: { arbitrageOpportunities: opportunities }
       };
     } catch (error) {
-      this.logError('Error finding arbitrage:', error);
+      this.logger.error('Error finding arbitrage:', error);
       throw error;
     }
   }
@@ -341,7 +359,7 @@ export class SwapAgent extends BaseAgent {
         context: { swapRoutes: routes }
       };
     } catch (error) {
-      this.logError('Error finding best route:', error);
+      this.logger.error('Error finding best route:', error);
       throw error;
     }
   }
@@ -384,7 +402,7 @@ export class SwapAgent extends BaseAgent {
         context: { priceComparison: prices }
       };
     } catch (error) {
-      this.logError('Error comparing prices:', error);
+      this.logger.error('Error comparing prices:', error);
       throw error;
     }
   }
@@ -399,14 +417,12 @@ export class SwapAgent extends BaseAgent {
   }
 
   private async handleGeneralSwapQuery(message: string, context: AgentContext): Promise<AgentResponse> {
-    return {
-      message: `I can help you with token swaps and DeFi trading. Here's what I can do:
-      • Get swap quotes for any token pair
-      • Execute token swaps with best rates
-      • Find arbitrage opportunities
-      • Analyze best swap routes
-      • Compare prices across DEXs`,
-      actions: [
+    try {
+      // Try to use LLM for intelligent response
+      const llmResponse = await this.processWithLLM(message, context);
+      return {
+        message: llmResponse,
+        actions: [
         {
           type: 'get_quote',
           label: 'Get Swap Quote',
@@ -425,6 +441,35 @@ export class SwapAgent extends BaseAgent {
       ],
       context: {}
     };
+    } catch (error) {
+      // Fallback to hardcoded response if LLM fails
+      return {
+        message: `I can help you with token swaps and DeFi trading. Here's what I can do:
+        • Get swap quotes for any token pair
+        • Execute token swaps with best rates
+        • Find arbitrage opportunities
+        • Analyze best swap routes
+        • Compare prices across DEXs`,
+        actions: [
+          {
+            type: 'get_quote',
+            label: 'Get Swap Quote',
+            data: {}
+          },
+          {
+            type: 'find_arbitrage',
+            label: 'Find Arbitrage',
+            data: {}
+          },
+          {
+            type: 'compare_prices',
+            label: 'Compare Prices',
+            data: {}
+          }
+        ],
+        context: {}
+      };
+    }
   }
 
   private getAuthHeaders(): any {
@@ -443,13 +488,28 @@ export class SwapAgent extends BaseAgent {
 
   private extractTokens(message: string): string[] {
     const tokens: string[] = [];
-    const commonTokens = ['WETH', 'USDC', 'USDT', 'WBTC', 'DAI', 'LINK', 'UNI', 'AAVE'];
+    const commonTokens = ['ETH', 'WETH', 'USDC', 'USDT', 'WBTC', 'DAI', 'LINK', 'UNI', 'AAVE'];
     
+    // First check for common tokens
     commonTokens.forEach(token => {
       if (message.toUpperCase().includes(token)) {
-        tokens.push(token);
+        // Convert ETH to WETH for swaps
+        tokens.push(token === 'ETH' ? 'WETH' : token);
       }
     });
+    
+    // Also extract any token that looks like a symbol (3-6 uppercase letters)
+    const tokenPattern = /\b([A-Z]{2,10})\b/g;
+    const matches = message.toUpperCase().match(tokenPattern);
+    if (matches) {
+      matches.forEach(match => {
+        // Skip common words that aren't tokens
+        if (!['TO', 'FROM', 'FOR', 'ON', 'IN', 'AT', 'THE', 'AND', 'OR'].includes(match) && 
+            !tokens.includes(match)) {
+          tokens.push(match);
+        }
+      });
+    }
     
     return tokens;
   }

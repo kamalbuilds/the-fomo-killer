@@ -67,10 +67,11 @@ export class DeFiAnalyticsAgent extends BaseAgent {
   constructor() {
     super({
       name: 'DeFiAnalytics',
+      isActive: true,
       description: 'DeFi analytics and market insights agent with premium features',
       version: '1.0.0',
       capabilities: ['market-analysis', 'yield-optimization', 'liquidity-analysis', 'impermanent-loss'],
-      isActive: true
+      priority: 85
     });
     this.cdpApiKey = process.env.COINBASE_CDP_API_KEY || '';
     this.cdpApiSecret = process.env.COINBASE_CDP_API_SECRET || '';

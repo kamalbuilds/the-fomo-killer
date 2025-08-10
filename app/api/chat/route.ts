@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       userId: walletAddress || 'anonymous',
       conversationId: conversationId || `conv_${Date.now()}`,
       timestamp: new Date(),
+      wallet: walletAddress ? { address: walletAddress } : undefined,
       metadata: {
         source: 'web_interface',
         agentType: agentType || 'master',
@@ -67,11 +68,17 @@ export async function POST(request: NextRequest) {
  * Process message through appropriate agent
  */
 async function processMessage(message: string, agentType: string, context: any) {
-  // Map UI agentType to agent class name
+  // Map UI agentType to agent class name (updated for Code NYC implementation)
   const agentTypeMap: Record<string, string> = {
     master: 'MasterAgent',
     utility: 'UtilityAgent',
-    trading: 'TradingAgent',
+    'data-driven': 'data-driven',
+    trading: 'trading',
+    'token-tracker': 'token-tracker', 
+    portfolio: 'portfolio',
+    'defi-analytics': 'defi-analytics',
+    sentiment: 'sentiment',
+    swap: 'swap',
     game: 'GameAgent',
     social: 'SocialAgent',
     miniapp: 'MiniAppAgent',
@@ -93,7 +100,12 @@ async function processMessage(message: string, agentType: string, context: any) 
     senderInboxId: context?.walletAddress || 'web-user',
     sentAt: new Date(),
   };
-  const agentResponse = await agent.processMessage?.(messageObj, context);
+  
+  // For MasterAgent and other base agents, pass the messageObj
+  // For specialized agents that override processMessage to expect string, pass string
+  const agentResponse = agentClassName === 'MasterAgent' || agentClassName === 'UtilityAgent' 
+    ? await agent.processMessage?.(messageObj, context)
+    : await agent.processMessage?.(message, context);
 
   // Return the real response (text, actions, etc.)
   return {

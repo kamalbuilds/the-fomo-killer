@@ -172,11 +172,11 @@ export class DataDrivenAgent extends BaseAgent {
             const analysis = this.analyzeTransactionPatterns(transactions);
             
             return `Wallet Analysis for ${address}:
-Total Transactions: ${transactions.length}
-Transaction Patterns: ${JSON.stringify(analysis, null, 2)}
-Recent Activity: ${transactions.slice(0, 5).map((tx: any) => 
-  `${tx.type}: ${tx.amount} ${tx.asset} (${tx.timestamp})`
-).join('\n')}`;
+              Total Transactions: ${transactions.length}
+              Transaction Patterns: ${JSON.stringify(analysis, null, 2)}
+              Recent Activity: ${transactions.slice(0, 5).map((tx: any) => 
+                `${tx.type}: ${tx.amount} ${tx.asset} (${tx.timestamp})`
+              ).join('\n')}`;
           } catch (error) {
             this.logger.error('Error analyzing wallet history', { error });
             return `Error analyzing wallet: ${error instanceof Error ? error.message : 'Unknown error'}`;

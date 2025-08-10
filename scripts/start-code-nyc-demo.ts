@@ -11,7 +11,7 @@ import { BasedAgentsMCPServer } from '../lib/mcp/mcp-server';
 import { SmartWalletIntegration } from '../lib/wallet/smart-wallet-integration';
 
 async function startCodeNYCDemo() {
-  console.log('🚀 Starting BasedAgents - Code NYC Demo');
+  console.log('🚀 Starting Kill-FOMO - Code NYC Demo');
   console.log('📊 Qualifying for all three bounty tracks:\n');
 
   try {
@@ -85,7 +85,7 @@ async function startCodeNYCDemo() {
     console.log('🎯 Initializing Master Agent...');
     const masterAgent = new MasterAgent({
       name: 'master',
-      description: 'Central orchestrator for all BasedAgents',
+      description: 'Central orchestrator for all Kill-FOMO',
       config: {},
       routingRules: [
         { 
@@ -120,7 +120,7 @@ async function startCodeNYCDemo() {
     // MCP server runs in background for external integrations
 
     // Initialize full agent server
-    console.log('🖥️ Starting BasedAgents Server...');
+    console.log('🖥️ Starting Kill-FOMO Server...');
     const server = new BaseAgentsServer();
     await server.start();
 
@@ -169,7 +169,7 @@ async function startCodeNYCDemo() {
     console.log('✅ x402 + CDP Wallet: Payment gating, revenue generation, blockchain validation');
     console.log('✅ Autonomous Worlds & Agents: MCP integration, Base smart contracts, utility agents');
 
-    console.log('\n🚀 BasedAgents is ready for Code NYC evaluation!');
+    console.log('\n🚀 Kill-FOMO is ready for Code NYC evaluation!');
     console.log('🎯 All three bounty tracks implemented with production-ready code');
     console.log('📱 Try the web interface at http://localhost:3000');
 

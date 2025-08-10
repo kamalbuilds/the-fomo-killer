@@ -1,7 +1,6 @@
-export { BaseAgent, AgentContext, AgentResponse, AgentAction } from './base-agent';
+export { BaseAgent } from './base-agent';
 export { TokenTrackerAgent } from './token-tracker-agent';
 export { SwapAgent } from './swap-agent';
-export { SentimentAgent } from './sentiment-agent';
 export { PortfolioAgent } from './portfolio-agent';
 export { DeFiAnalyticsAgent } from './defi-analytics-agent';
 
@@ -76,7 +75,7 @@ export class MasterAgent extends BaseAgent {
   private defiAnalytics: DeFiAnalyticsAgent;
 
   constructor() {
-    super('MasterAgent', '🎯');
+    super('MasterAgent');
     this.tokenTracker = new TokenTrackerAgent();
     this.swapAgent = new SwapAgent();
     this.sentimentAgent = new SentimentAgent();
@@ -85,7 +84,7 @@ export class MasterAgent extends BaseAgent {
   }
 
   async processMessage(message: string, context: any): Promise<any> {
-    this.logInfo(`Processing message with MasterAgent: ${message}`);
+    this.logger.info(`Processing message with MasterAgent: ${message}`);
     
     try {
       // Analyze message to determine which agent(s) to use
@@ -124,7 +123,7 @@ export class MasterAgent extends BaseAgent {
           return await this.handleGeneralRequest(message, context);
       }
     } catch (error) {
-      this.logError('Error in MasterAgent:', error);
+      this.logger.error('Error in MasterAgent:', error);
       return {
         message: 'I encountered an error processing your request. Please try again.',
         actions: [],
@@ -170,7 +169,7 @@ export class MasterAgent extends BaseAgent {
   }
 
   private async handleMultiAgentRequest(message: string, context: any, agents: string[]): Promise<any> {
-    this.logInfo(`Coordinating multiple agents: ${agents.join(', ')}`);
+    this.logger.info(`Coordinating multiple agents: ${agents.join(', ')}`);
     
     const responses = await Promise.all(
       agents.map(async agent => {

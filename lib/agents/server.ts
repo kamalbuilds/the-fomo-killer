@@ -1,20 +1,19 @@
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import winston from 'winston';
 import { EventEmitter } from 'events';
 import { MasterAgent } from './master-agent';
 import { UtilityAgent } from './utility-agent';
+import { TokenTrackerAgent } from './token-tracker-agent';
+import { SwapAgent } from './swap-agent';
+import { SentimentAgent } from './sentiment-agent';
+import { PortfolioAgent } from './portfolio-agent';
+import { DeFiAnalyticsAgent } from './defi-analytics-agent';
+import { DataDrivenAgent } from './data-driven-agent';
 import { TradingAgent } from './trading-agent';
-import { GameAgent } from './game-agent';
-import { SocialAgent } from './sentiment-agent';
-import { MiniAppAgent } from './miniapp-agent';
 import { XMTPClientManager } from '../xmtp/client';
 import {
   MasterAgentConfig,
   UtilityAgentConfig,
-  TradingAgentConfig,
-  GamingAgentConfig,
-  SocialAgentConfig,
-  MiniAppAgentConfig,
   AgentContext,
   SystemHealth,
   AgentHealth,
@@ -24,7 +23,7 @@ import {
 dotenv.config();
 
 /**
- * BasedAgents Server - Orchestrates the multi-agent system
+ * Kill-FOMO Server - Orchestrates the multi-agent system
  */
 export class BaseAgentsServer extends EventEmitter {
   private logger: winston.Logger;
@@ -46,29 +45,33 @@ export class BaseAgentsServer extends EventEmitter {
    */
   async start(): Promise<void> {
     try {
-      this.logger.info('🚀 Starting BasedAgents Server...');
+      this.logger.info('🚀 Starting Kill-FOMO Server...');
 
       // Validate environment variables
       this.validateEnvironment();
 
-      // Initialize XMTP client
-      await this.xmtpClient.initialize();
+      // Initialize XMTP client (optional - continue if it fails)
+      try {
+        await this.xmtpClient.initialize();
+        // Start XMTP message stream only if client initialized
+        this.startMessageStream();
+      } catch (xmtpError) {
+        this.logger.warn('⚠️ XMTP client failed to initialize, continuing without messaging', { xmtpError });
+        // Continue without XMTP - agents will still work via API
+      }
 
-      // Initialize all agents
+      // Initialize all agents (this will work even without XMTP)
       await this.initializeAgents();
-
-      // Start XMTP message stream
-      this.startMessageStream();
 
       // Start health monitoring
       this.startHealthMonitoring();
 
       this.isRunning = true;
-      this.logger.info('✅ BasedAgents Server started successfully');
+      this.logger.info('✅ Kill-FOMO Server started successfully');
       this.emit('started');
 
     } catch (error) {
-      this.logger.error('❌ Failed to start BasedAgents Server', { error });
+      this.logger.error('❌ Failed to start Kill-FOMO Server', { error });
       throw error;
     }
   }
@@ -78,7 +81,7 @@ export class BaseAgentsServer extends EventEmitter {
    */
   async stop(): Promise<void> {
     try {
-      this.logger.info('🛑 Stopping BasedAgents Server...');
+      this.logger.info('🛑 Stopping Kill-FOMO Server...');
 
       this.isRunning = false;
 
@@ -95,11 +98,11 @@ export class BaseAgentsServer extends EventEmitter {
       // Cleanup XMTP client
       await this.xmtpClient.cleanup();
 
-      this.logger.info('✅ BasedAgents Server stopped successfully');
+      this.logger.info('✅ Kill-FOMO Server stopped successfully');
       this.emit('stopped');
 
     } catch (error) {
-      this.logger.error('❌ Error stopping BasedAgents Server', { error });
+      this.logger.error('❌ Error stopping Kill-FOMO Server', { error });
       throw error;
     }
   }
@@ -135,17 +138,20 @@ export class BaseAgentsServer extends EventEmitter {
       console.log('[BaseAgentsServer] Initializing MasterAgent...');
       const masterConfig: MasterAgentConfig = {
         name: 'MasterAgent',
-        description: 'Central orchestrator for the BasedAgents multi-agent system',
+        description: 'Central orchestrator for the Kill-FOMO multi-agent system',
         capabilities: ['routing', 'delegation', 'system_management', 'agent_coordination'],
         version: '1.0.0',
         isActive: true,
         priority: 100,
         routingRules: [
-          { pattern: /trade|swap|defi|portfolio/i, agent: 'TradingAgent', priority: 90 },
-          { pattern: /game|play|bet|trivia/i, agent: 'GameAgent', priority: 80 },
-          { pattern: /event|plan|payment|split/i, agent: 'UtilityAgent', priority: 85 },
-          { pattern: /news|social|content|trending/i, agent: 'SocialAgent', priority: 75 },
-          { pattern: /app|tool|calculate|convert/i, agent: 'MiniAppAgent', priority: 70 },
+          { pattern: /swap|exchange/i, targetAgent: 'swap', priority: 96 },
+          { pattern: /analyze|data|portfolio|balance|wallet|history/i, targetAgent: 'data-driven', priority: 95 },
+          { pattern: /trade|buy|sell|defi|token|price/i, targetAgent: 'trading', priority: 94 },
+          { pattern: /track|trending|tokens/i, targetAgent: 'token-tracker', priority: 90 },
+          { pattern: /portfolio|positions|holdings/i, targetAgent: 'portfolio', priority: 88 },
+          { pattern: /analytics|market|yield/i, targetAgent: 'defi-analytics', priority: 87 },
+          { pattern: /sentiment|news|social/i, targetAgent: 'sentiment', priority: 85 },
+          { pattern: /event|plan|payment|split/i, targetAgent: 'utility', priority: 80 },
         ],
         fallbackAgent: 'UtilityAgent',
         maxConversations: 1000,
@@ -179,91 +185,83 @@ export class BaseAgentsServer extends EventEmitter {
       this.agents.set('UtilityAgent', utilityAgent);
       console.log('[BaseAgentsServer] UtilityAgent initialized and registered.');
 
-      // Initialize Trading Agent
+      // Initialize Data-Driven Agent (Code NYC - Data-Driven Agents Track)
+      console.log('[BaseAgentsServer] Initializing DataDrivenAgent...');
+      const dataDrivenAgent = new DataDrivenAgent({
+        name: 'data-driven',
+        description: 'CDP Data API powered blockchain analysis agent',
+        config: {},
+      });
+      await dataDrivenAgent.initialize();
+      await this.masterAgent.registerAgent(dataDrivenAgent);
+      this.agents.set('data-driven', dataDrivenAgent);
+      console.log('[BaseAgentsServer] DataDrivenAgent initialized and registered.');
+
+      // Initialize Trading Agent (Code NYC - Enhanced trading capabilities)
       console.log('[BaseAgentsServer] Initializing TradingAgent...');
-      const tradingConfig: TradingAgentConfig = {
-        name: 'TradingAgent',
-        description: 'Handles DeFi operations, trading, and portfolio management',
-        capabilities: ['token_swaps', 'portfolio_tracking', 'price_alerts', 'market_analysis'],
-        version: '1.0.0',
-        isActive: true,
-        priority: 90,
-        supportedNetworks: ['base-mainnet', 'ethereum'],
-        maxTransactionValue: 100000, // $100k USD
-        riskTolerance: 'medium',
-        tradingPairs: ['ETH/USDC', 'BTC/USDC', 'USDC/DAI'],
-      };
-      const tradingAgent = new TradingAgent(tradingConfig);
+      const tradingAgent = new TradingAgent({
+        name: 'trading',
+        description: 'DeFi and trading operations agent with AgentKit',
+        config: {},
+      });
       await tradingAgent.initialize();
       await this.masterAgent.registerAgent(tradingAgent);
-      this.agents.set('TradingAgent', tradingAgent);
+      this.agents.set('trading', tradingAgent);
       console.log('[BaseAgentsServer] TradingAgent initialized and registered.');
 
-      // Initialize Game Agent
-      console.log('[BaseAgentsServer] Initializing GameAgent...');
-      const gameConfig: GamingAgentConfig = {
-        name: 'GameAgent',
-        description: 'Manages interactive multiplayer games and entertainment',
-        capabilities: ['trivia_games', 'word_games', 'betting', 'tournaments'],
-        version: '1.0.0',
-        isActive: true,
-        priority: 80,
-        supportedGames: [
-          { id: 'trivia', name: 'Trivia Quiz', description: 'Answer questions to earn points', minPlayers: 2, maxPlayers: 10, duration: 15, category: 'trivia' },
-          { id: 'word-chain', name: 'Word Chain', description: 'Build words from previous letters', minPlayers: 2, maxPlayers: 6, duration: 10, category: 'word' },
-        ],
-        maxPlayersPerGame: 20,
-        enableBetting: true,
-      };
-      const gameAgent = new GameAgent(gameConfig);
-      await gameAgent.initialize();
-      await this.masterAgent.registerAgent(gameAgent);
-      this.agents.set('GameAgent', gameAgent);
-      console.log('[BaseAgentsServer] GameAgent initialized and registered.');
+      // Initialize Token Tracker Agent
+      console.log('[BaseAgentsServer] Initializing TokenTrackerAgent...');
+      const tokenTrackerAgent = new TokenTrackerAgent();
+      await tokenTrackerAgent.initialize();
+      await this.masterAgent.registerAgent(tokenTrackerAgent);
+      this.agents.set('token-tracker', tokenTrackerAgent);
+      console.log('[BaseAgentsServer] TokenTrackerAgent initialized and registered.');
 
-      // Initialize Social Agent
-      console.log('[BaseAgentsServer] Initializing SocialAgent...');
-      const socialConfig: SocialAgentConfig = {
-        name: 'SocialAgent',
-        description: 'Curates content and manages community engagement',
-        capabilities: ['content_curation', 'news_aggregation', 'sentiment_analysis', 'trending_topics'],
+      // Initialize Swap Agent  
+      console.log('[BaseAgentsServer] Initializing SwapAgent...');
+      const swapAgent = new SwapAgent();
+      await swapAgent.initialize();
+      await this.masterAgent.registerAgent(swapAgent);
+      this.agents.set('swap', swapAgent);
+      console.log('[BaseAgentsServer] SwapAgent initialized and registered.');
+
+      // Initialize Portfolio Agent
+      console.log('[BaseAgentsServer] Initializing PortfolioAgent...');
+      const portfolioAgent = new PortfolioAgent();
+      await portfolioAgent.initialize();
+      await this.masterAgent.registerAgent(portfolioAgent);
+      this.agents.set('portfolio', portfolioAgent);
+      console.log('[BaseAgentsServer] PortfolioAgent initialized and registered.');
+
+      // Initialize DeFi Analytics Agent
+      console.log('[BaseAgentsServer] Initializing DeFiAnalyticsAgent...');
+      const defiAnalyticsAgent = new DeFiAnalyticsAgent();
+      await defiAnalyticsAgent.initialize();
+      await this.masterAgent.registerAgent(defiAnalyticsAgent);
+      this.agents.set('defi-analytics', defiAnalyticsAgent);
+      console.log('[BaseAgentsServer] DeFiAnalyticsAgent initialized and registered.');
+
+      // Initialize Sentiment Agent
+      console.log('[BaseAgentsServer] Initializing SentimentAgent...');
+      const sentimentConfig: any = {
+        name: 'sentiment',
+        description: 'Analyzes social sentiment and market mood',
+        capabilities: ['sentiment_analysis', 'news_aggregation', 'trend_detection'],
         version: '1.0.0',
         isActive: true,
-        priority: 75,
-        contentSources: [
-          { name: 'CoinDesk', type: 'rss', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', categories: ['bitcoin'], isActive: true },
-          { name: 'CoinTelegraph', type: 'rss', url: 'https://cointelegraph.com/rss', categories: ['altcoins'], isActive: true },
-        ],
+        priority: 85,
+        contentSources: [],
         moderationLevel: 'moderate',
         personalizedContent: true,
       };
-      const socialAgent = new SocialAgent(socialConfig);
-      await socialAgent.initialize();
-      await this.masterAgent.registerAgent(socialAgent);
-      this.agents.set('SocialAgent', socialAgent);
-      console.log('[BaseAgentsServer] SocialAgent initialized and registered.');
+      const sentimentAgent = new SentimentAgent(sentimentConfig);
+      await sentimentAgent.initialize();
+      await this.masterAgent.registerAgent(sentimentAgent);
+      this.agents.set('sentiment', sentimentAgent);
+      console.log('[BaseAgentsServer] SentimentAgent initialized and registered.');
 
-      // Initialize MiniApp Agent
-      console.log('[BaseAgentsServer] Initializing MiniAppAgent...');
-      const miniappConfig: MiniAppAgentConfig = {
-        name: 'MiniAppAgent',
-        description: 'Launches and manages mini-applications within conversations',
-        capabilities: ['app_management', 'utility_tools', 'calculator', 'converter', 'polls'],
-        version: '1.0.0',
-        isActive: true,
-        priority: 70,
-        supportedApps: [
-          { id: 'calculator', name: 'Calculator', description: 'Mathematical calculations', version: '1.0.0', icon: '🧮', category: 'utility', permissions: [], url: '/apps/calculator', isActive: true },
-          { id: 'converter', name: 'Currency Converter', description: 'Convert currencies', version: '1.0.0', icon: '💱', category: 'finance', permissions: [], url: '/apps/converter', isActive: true },
-        ],
-        sandboxMode: false,
-        maxAppsPerConversation: 5,
-      };
-      const miniappAgent = new MiniAppAgent(miniappConfig);
-      await miniappAgent.initialize();
-      await this.masterAgent.registerAgent(miniappAgent);
-      this.agents.set('MiniAppAgent', miniappAgent);
-      console.log('[BaseAgentsServer] MiniAppAgent initialized and registered.');
+      // GameAgent and MiniAppAgent are stub implementations
+      // Focus is on DeFi agents
 
       console.log(`[BaseAgentsServer] All agents initialized. Total: ${this.agents.size}`);
       this.logger.info(`✅ Initialized ${this.agents.size} agents successfully`);
@@ -469,7 +467,8 @@ export class BaseAgentsServer extends EventEmitter {
     }
 
     const xmtpStatus = this.xmtpClient.getStatus();
-    const overallStatus = this.isRunning && xmtpStatus.isConnected ? 'healthy' : 'degraded';
+    // Consider the system healthy if running, even without XMTP (agents work via API)
+    const overallStatus = this.isRunning ? 'healthy' : 'down';
 
     return {
       status: overallStatus,

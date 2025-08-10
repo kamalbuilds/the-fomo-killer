@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
             headers: {
               'content-type': 'application/json',
               // Basic hint header. For full spec, follow x402 Quickstart for Sellers
-              'www-authenticate': `x402 realm="BasedAgents", address="${process.env.X402_SELLER_ADDRESS}", amount_cents="${priceCents}", currency="USDC", network="base"`,
+              'www-authenticate': `x402 realm="Kill-FOMO", address="${process.env.X402_SELLER_ADDRESS}", amount_cents="${priceCents}", currency="USDC", network="base"`,
             },
           },
         );
@@ -72,12 +72,25 @@ export async function POST(request: NextRequest) {
         const cdp = new (CdpClient as any)();
         // Lazy touch to ensure credentials load; will throw if misconfigured
         await cdp.evm?.getOrCreateAccount?.({ name: 'based-agents-health' }).catch(() => {});
+        console.log('CDP credentials configured');
       } catch {
+        console.error('CDP credentials not configured');
         // continue; we don't block server start, but integration is present
       }
     }
-    const body = await request.json();
-    const { action } = body;
+    // Try to parse body, if empty return agent list
+    let body: any = {};
+    let action: string | undefined;
+    
+    try {
+      const text = await request.text();
+      if (text) {
+        body = JSON.parse(text);
+        action = body.action;
+      }
+    } catch (error) {
+      // Empty or invalid body, default to list action
+    }
 
     switch (action) {
       case 'start':
@@ -126,10 +139,36 @@ export async function POST(request: NextRequest) {
           health: global.agentServer.getSystemHealth()
         });
 
-      default:
+      case 'status':
+        if (!global.agentServer) {
+          return NextResponse.json({ 
+            status: 'not_running',
+            message: 'Agent server not initialized' 
+          });
+        }
+        const health = global.agentServer.getSystemHealth();
         return NextResponse.json({ 
-          error: 'Invalid action. Use start, stop, or restart'
-        }, { status: 400 });
+          status: health.status,
+          health,
+          agents: Object.keys(health.agents)
+        });
+      
+      default:
+        // Default to list action if no action specified
+        if (!global.agentServer) {
+          return NextResponse.json({ agents: [] });
+        }
+        const agentList = [];
+        const systemHealth = global.agentServer.getSystemHealth();
+        for (const [name, agentHealth] of Object.entries(systemHealth.agents)) {
+          agentList.push({
+            name,
+            isActive: agentHealth.isActive,
+            conversationCount: agentHealth.conversationCount,
+            lastActivity: agentHealth.lastActivity
+          });
+        }
+        return NextResponse.json({ agents: agentList });
     }
 
   } catch (error) {

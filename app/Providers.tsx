@@ -1,28 +1,25 @@
 "use client"
 import React, { ReactNode } from 'react';
 import '@rainbow-me/rainbowkit/styles.css';
-
 import {
     getDefaultConfig,
     RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import {
-    mainnet,
-    polygon,
-    optimism,
-    arbitrum,
+    baseSepolia,
     base,
 } from 'wagmi/chains';
 import {
     QueryClientProvider,
     QueryClient,
 } from "@tanstack/react-query";
+import { MiniKitProvider } from '@/providers/MiniKitProvider';
 
 const config = getDefaultConfig({
-    appName: 'My RainbowKit App',
-    projectId: 'YOUR_PROJECT_ID',
-    chains: [mainnet, polygon, optimism, arbitrum, base],
+    appName: 'Kill-FOMO',
+    projectId: '0f869a1f7240141b3408d5d1fe42545a',
+    chains: [base, baseSepolia],
     ssr: true,
 });
 
@@ -33,7 +30,9 @@ const Providers = ({ children }: { children: ReactNode }) => {
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
                 <RainbowKitProvider>
-                    {children}
+                    <MiniKitProvider>
+                        {children}
+                    </MiniKitProvider>
                 </RainbowKitProvider>
             </QueryClientProvider>
         </WagmiProvider>

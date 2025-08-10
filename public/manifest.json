@@ -1,0 +1,36 @@
+{
+  "name": "Kill-FOMO DeFi Agent",
+  "short_name": "Kill-FOMO",
+  "description": "AI-powered DeFi agents on Base with CDP integration, x402 payments, and XMTP messaging",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1E293B",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["finance", "defi", "trading", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshot-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Chat with AI Agents"
+    },
+    {
+      "src": "/screenshot-2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Portfolio Analytics"
+    }
+  ]
+}

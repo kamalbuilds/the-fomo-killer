@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <!-- Screenshot 2: Portfolio Analytics Dashboard -->
+  
+  <!-- Background -->
+  <rect width="1280" height="720" fill="#0F172A"/>
+  
+  <!-- App interface -->
+  <rect x="20" y="60" width="1240" height="640" rx="8" fill="#1E293B"/>
+  
+  <!-- Header -->
+  <rect x="20" y="60" width="1240" height="70" rx="8" fill="#334155"/>
+  <text x="60" y="105" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">Portfolio Analytics</text>
+  
+  <!-- Portfolio value card -->
+  <g transform="translate(40, 150)">
+    <rect width="380" height="120" rx="8" fill="#334155"/>
+    <text x="20" y="35" font-family="Arial, sans-serif" font-size="14" fill="#94A3B8">Total Portfolio Value</text>
+    <text x="20" y="70" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white">$47,823.56</text>
+    <text x="20" y="100" font-family="Arial, sans-serif" font-size="14" fill="#10B981">+12.4% (24h)</text>
+  </g>
+  
+  <!-- Holdings chart -->
+  <g transform="translate(450, 150)">
+    <rect width="380" height="120" rx="8" fill="#334155"/>
+    <text x="20" y="35" font-family="Arial, sans-serif" font-size="14" fill="#94A3B8">Top Holdings</text>
+    
+    <!-- Mini bar chart -->
+    <rect x="20" y="50" width="150" height="15" rx="2" fill="#3B82F6"/>
+    <text x="180" y="62" font-family="Arial, sans-serif" font-size="12" fill="white">ETH 45%</text>
+    
+    <rect x="20" y="70" width="100" height="15" rx="2" fill="#8B5CF6"/>
+    <text x="130" y="82" font-family="Arial, sans-serif" font-size="12" fill="white">USDC 30%</text>
+    
+    <rect x="20" y="90" width="60" height="15" rx="2" fill="#10B981"/>
+    <text x="90" y="102" font-family="Arial, sans-serif" font-size="12" fill="white">BRETT 15%</text>
+  </g>
+  
+  <!-- Yield opportunities -->
+  <g transform="translate(860, 150)">
+    <rect width="380" height="120" rx="8" fill="#334155"/>
+    <text x="20" y="35" font-family="Arial, sans-serif" font-size="14" fill="#94A3B8">Best Yield Opportunity</text>
+    <text x="20" y="70" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#10B981">18.5% APY</text>
+    <text x="20" y="100" font-family="Arial, sans-serif" font-size="14" fill="#64748B">ETH-USDC LP on Aerodrome</text>
+  </g>
+  
+  <!-- Performance chart area -->
+  <g transform="translate(40, 300)">
+    <rect width="1200" height="300" rx="8" fill="#0F172A"/>
+    <text x="20" y="30" font-family="Arial, sans-serif" font-size="16" fill="white">Portfolio Performance</text>
+    
+    <!-- Simple line chart -->
+    <path d="M 50 250 L 200 220 L 350 240 L 500 180 L 650 160 L 800 140 L 950 120 L 1100 100" 
+          stroke="#3B82F6" stroke-width="3" fill="none"/>
+    
+    <!-- Chart grid -->
+    <line x1="50" y1="280" x2="1150" y2="280" stroke="#334155" stroke-width="1"/>
+    <line x1="50" y1="50" x2="50" y2="280" stroke="#334155" stroke-width="1"/>
+    
+    <!-- Time labels -->
+    <text x="50" y="295" font-family="Arial, sans-serif" font-size="10" fill="#64748B">Jan</text>
+    <text x="350" y="295" font-family="Arial, sans-serif" font-size="10" fill="#64748B">Mar</text>
+    <text x="650" y="295" font-family="Arial, sans-serif" font-size="10" fill="#64748B">Jun</text>
+    <text x="950" y="295" font-family="Arial, sans-serif" font-size="10" fill="#64748B">Sep</text>
+  </g>
+  
+  <!-- Action buttons -->
+  <g transform="translate(40, 630)">
+    <rect width="150" height="40" rx="20" fill="#3B82F6"/>
+    <text x="75" y="25" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">Rebalance</text>
+    
+    <rect x="200" width="150" height="40" rx="20" fill="#8B5CF6"/>
+    <text x="275" y="25" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">Optimize Yield</text>
+    
+    <rect x="400" width="150" height="40" rx="20" fill="#10B981"/>
+    <text x="475" y="25" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">Export Report</text>
+  </g>
+  
+  <!-- Premium badge -->
+  <g transform="translate(1100, 630)">
+    <rect width="140" height="40" rx="20" fill="#F59E0B" opacity="0.2"/>
+    <text x="70" y="25" font-family="Arial, sans-serif" font-size="12" fill="#F59E0B" text-anchor="middle">x402 Premium</text>
+  </g>
+</svg>

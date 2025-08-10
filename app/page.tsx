@@ -37,11 +37,11 @@ export default function Home() {
                   <span className="text-white font-bold text-sm">BA</span>
                 </div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  BasedAgents
+                  Kill-FOMO
                 </h1>
               </div>
               <div className="hidden md:block">
-                <span className="text-sm text-gray-500">Multi-Agent System for Base</span>
+                <span className="text-sm text-gray-500">Get the best deals on crypto</span>
               </div>
             </div>
 

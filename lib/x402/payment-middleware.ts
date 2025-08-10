@@ -93,7 +93,7 @@ export class X402PaymentMiddleware {
    * Generate WWW-Authenticate header for x402
    */
   private generateAuthHeader(): string {
-    const realm = this.config.description || 'BasedAgents API';
+    const realm = this.config.description || 'Kill-FOMO API';
     return `x402 realm="${realm}", ` +
            `address="${this.config.sellerAddress}", ` +
            `amount_cents="${this.config.priceUsdcCents}", ` +
