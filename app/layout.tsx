@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./Providers";
 import { Toaster } from "@/components/ui/sonner"
+import { Metadata } from 'next';
 
+export const metadata: Metadata = {
+  other: {
+    'base:app_id': '6949b893c63ad876c9080f60',
+  },
+};
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -17,7 +22,7 @@ const geistMono = Geist_Mono({
 export async function generateMetadata(): Promise<Metadata> {
   const URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:3005';
   const projectName = process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Kill-FOMO DeFi Agent';
-  
+
   return {
     title: projectName,
     description: "AI-powered DeFi agents on Base with CDP integration, x402 payments, and XMTP messaging",
